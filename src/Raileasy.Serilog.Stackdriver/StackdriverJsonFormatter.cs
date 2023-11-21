@@ -35,12 +35,11 @@ namespace Raileasy.Serilog.Stackdriver
     public class StackdriverJsonFormatter : ITextFormatter
     {
         // 256kb apparently, but we're conservative (https://cloud.google.com/logging/quotas)
-        private static readonly int STACKDRIVER_ENTRY_LIMIT_BYTES = 200 * 1024; // 258kb, reduced to 200kb
+        private const int StackdriverEntryLimitBytes = 200 * 1024; // 258kb, reduced to 200kb
 
         private readonly bool _checkForPayloadLimit;
         private readonly bool _includeMessageTemplate;
         private readonly JsonValueFormatter _valueFormatter;
-
         public StackdriverJsonFormatter(bool checkForPayloadLimit = true, 
             bool includeMessageTemplate = true,
             JsonValueFormatter valueFormatter = null)
@@ -136,7 +135,7 @@ namespace Raileasy.Serilog.Stackdriver
 
 			// if we have blown the limit of a single stackdriver line (which means that error reporting won't parse 
 			// it correctly for instance) - then log that fact out too so we can adjust the logging and fix the problem
-            if (_checkForPayloadLimit && (output.CharacterCount * 4) >= STACKDRIVER_ENTRY_LIMIT_BYTES)
+            if (_checkForPayloadLimit && (output.CharacterCount * 4) >= StackdriverEntryLimitBytes)
 			{
 				string text = "An attempt was made to write a log event to stackdriver that exceeds StackDriver Entry length limit - check logs for partially parsed entry just prior to this and fix at source";
 				var tooLongLogEvent = new LogEvent(
